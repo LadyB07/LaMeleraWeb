@@ -1,0 +1,131 @@
+﻿@model LaMeleraWeb.Models.MovimientoEdicion
+@{
+    ViewData["Title"] = "Editar Movimiento";
+    var conceptos = ViewBag.Conceptos as List<LaMeleraWeb.Models.Concepto>;
+    var comuneros = ViewBag.Comuneros as List<LaMeleraWeb.Models.Comunero>;
+    string tituloApartado = Model.IdApartado switch
+    {
+        1 => "Editar Ingreso - Comunidad",
+        2 => "Editar Gasto - Zonas Comunes",
+        3 => "Editar Ingreso - Olivar y Cosecha",
+        4 => "Editar Gasto - Olivar",
+        _ => "Editar Movimiento"
+    };
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-olivo p-4">
+            <h4 class="fw-bold mb-3" style="color: var(--olivo-oscuro); border-bottom: 2px solid #c59b27; padding-bottom: 8px;">
+                @tituloApartado
+            </h4>
+
+            <form asp-action="Editar" method="post">
+                <input type="hidden" asp-for="IdRegistro" />
+                <input type="hidden" asp-for="IdApartado" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha</label>
+                        <input asp-for="Fecha" type="date" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Concepto</label>
+                        <select asp-for="IdConcepto" class="form-select" required>
+                            @foreach (var c in conceptos!)
+                            {
+                                <option value="@c.IdConcepto">@c.NombreConcepto</option>
+                            }
+                        </select>
+                    </div>
+
+                    @if (Model.IdApartado == 1 && comuneros != null)
+                    {
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Comunero</label>
+                            <select asp-for="IdComunero" class="form-select" required>
+                                @foreach (var com in comuneros)
+                                {
+                                    <option value="@com.IdComunero">@com.NombreCompleto</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Mes Cuota</label>
+                            <input asp-for="PeriodoMes" type="number" min="1" max="12" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Año Cuota</label>
+                            <input asp-for="PeriodoAnio" type="number" min="2000" max="2099" class="form-control" />
+                        </div>
+                    }
+
+                    @if (Model.IdApartado == 2 || Model.IdApartado == 4)
+                    {
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">N° Factura / Recibo</label>
+                            <input asp-for="NroFacturaRecibo" type="text" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Litros (Gasoil / Agua / Productos)</label>
+                            <input asp-for="Litros" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                        </div>
+                    }
+
+                    @if (Model.IdApartado == 3)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-success">🫒 Kg de Aceituna</label>
+                            <input asp-for="KgAceituna" id="editKgAceituna" type="number" step="0.01" class="form-control" oninput="recalcularOlivar()" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-warning-emphasis">🧴 Kg / L de Aceite</label>
+                            <input asp-for="KgAceite" id="editKgAceite" type="number" step="0.01" class="form-control" oninput="recalcularOlivar()" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Precio por Kg / L (€)</label>
+                            <input asp-for="PrecioPorKg" id="editPrecioKg" type="number" step="0.001" class="form-control" oninput="recalcularOlivar()" />
+                        </div>
+                    }
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Importe Total (€)</label>
+                        <input asp-for="Importe" id="editImporte" type="number" step="0.01" class="form-control fw-bold" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Notas / Observaciones</label>
+                        <input asp-for="Notas" type="text" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a asp-controller="Gestion" asp-action="Reportes" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-olivo px-4">Guardar Modificación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function recalcularOlivar() {
+            const elAceituna = document.getElementById("editKgAceituna");
+            const elAceite = document.getElementById("editKgAceite");
+            const elPrecio = document.getElementById("editPrecioKg");
+            const elTotal = document.getElementById("editImporte");
+            if (!elAceituna || !elAceite || !elPrecio || !elTotal) return;
+
+            const cant = (parseFloat(elAceituna.value) || 0) > 0
+                ? (parseFloat(elAceituna.value) || 0)
+                : (parseFloat(elAceite.value) || 0);
+            const precio = parseFloat(elPrecio.value) || 0;
+
+            if (cant > 0 && precio > 0) {
+                elTotal.value = (cant * precio).toFixed(2);
+            }
+        }
+    </script>
+}

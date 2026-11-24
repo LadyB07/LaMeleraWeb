@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "Acerca de - Cortijo La Melera";
+}
+
+<div class="card card-olivo p-4 p-md-5">
+    <div class="row align-items-center g-4">
+        <div class="col-md-4 text-center">
+            <img src="~/img/logo-melera.jpg" alt="Cortijo La Melera" class="rounded-circle shadow" style="width: 230px; height: 230px; object-fit: cover; border: 4px solid #c59b27;" />
+            <h5 class="fw-bold mt-3 mb-0" style="color: #3d4f22;">Cortijo La Melera</h5>
+            <span class="badge mt-1" style="background-color: #556b2f;">Sierra Arana · Iznalloz, Granada</span>
+        </div>
+
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-3" style="color: #3d4f22; border-bottom: 2px solid #c59b27; padding-bottom: 8px;">
+                Sobre Nuestra Explotación Oleícola
+            </h2>
+            <p class="text-secondary" style="line-height: 1.7;">
+                El <strong>Cortijo de La Melera</strong> está ubicado en un enclave privilegiado en el corazón de <strong>Sierra Arana</strong>, municipio de Iznalloz (Granada, España). Nuestra finca se dedica a la gestión comunitaria y a la producción artesanal de <strong>Aceite de Oliva Extra Virgen</strong> de calidad suprema.
+            </p>
+
+            <div class="row g-3 mt-2">
+                <div class="col-sm-6">
+                    <div class="p-3 rounded" style="background-color: #eef2e6; border-left: 4px solid #556b2f;">
+                        <h6 class="fw-bold mb-1" style="color: #3d4f22;">Variedad Picual</h6>
+                        <p class="small text-muted mb-0">
+                            Aceituna de extraordinaria estabilidad, alto contenido en ácido oleico y polifenoles, con notas intensas de frutado verde.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="p-3 rounded" style="background-color: #eef2e6; border-left: 4px solid #c59b27;">
+                        <h6 class="fw-bold mb-1" style="color: #3d4f22;">Cultivo Ecológico y Cosecha Temprana</h6>
+                        <p class="small text-muted mb-0">
+                            Manejo 100% libre de síntesis química mediante cubiertas vegetales y abonos orgánicos, recolectado en octubre y noviembre para maximizar sus aromas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <small class="text-muted d-block">Sistema Web de Gestión y Control de Producción · Versión 2.0</small>
+                    <small class="fw-semibold" style="color: var(--olivo-oscuro);">
+                        &copy; 2026 Diseñado y desarrollado por Lady Bohórquez &amp; Linda López. Todos los derechos reservados.
+                    </small>
+                </div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-olivo btn-sm">Volver al Panel</a>
+            </div>
+        </div>
+    </div>
+</div>

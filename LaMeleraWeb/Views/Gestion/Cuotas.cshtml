@@ -1,0 +1,63 @@
+﻿@model List<LaMeleraWeb.Models.EstadoCuotaAnual>
+@{
+    ViewData["Title"] = "Control de Cuotas";
+    int anio = (int)ViewBag.AnioSeleccionado;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0" style="color: #3d4f22;">Control Anual de Cuotas - Año @anio</h3>
+        <small class="text-muted">Estado mensual de aportaciones por comunero (Verde = Pagado · Rojo = Pendiente)</small>
+    </div>
+
+    <form method="get" asp-action="Cuotas" class="d-flex gap-2">
+        <input type="number" name="anio" value="@anio" min="1980" max="2100" class="form-control" style="width: 110px;" />
+        <button type="submit" class="btn btn-olivo">Consultar Año</button>
+    </form>
+</div>
+
+<div class="card card-olivo">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0 text-center small">
+            <thead style="background-color: #556b2f; color: white;">
+                <tr>
+                    <th class="text-start ps-3">Comunero</th>
+                    <th>Ene</th>
+                    <th>Feb</th>
+                    <th>Mar</th>
+                    <th>Abr</th>
+                    <th>May</th>
+                    <th>Jun</th>
+                    <th>Jul</th>
+                    <th>Ago</th>
+                    <th>Sep</th>
+                    <th>Oct</th>
+                    <th>Nov</th>
+                    <th>Dic</th>
+                    <th>Total Pagado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    decimal[] meses = { c.Ene, c.Feb, c.Mar, c.Abr, c.May, c.Jun, c.Jul, c.Ago, c.Sep, c.Oct, c.Nov, c.Dic };
+                    <tr>
+                        <td class="text-start ps-3 fw-bold" style="color: #3d4f22;">@c.NombreCompleto</td>
+                        @foreach (var monto in meses)
+                        {
+                            if (monto > 0)
+                            {
+                                <td class="bg-success bg-opacity-10 text-success fw-bold">@monto.ToString("0")€</td>
+                            }
+                            else
+                            {
+                                <td class="bg-danger bg-opacity-10 text-danger">Debe</td>
+                            }
+                        }
+                        <td class="fw-bold" style="color: #3d4f22;">@c.TotalPagado.ToString("N2") €</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

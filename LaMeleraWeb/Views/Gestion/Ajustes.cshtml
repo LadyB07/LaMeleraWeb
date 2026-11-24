@@ -1,0 +1,157 @@
+﻿@{
+    ViewData["Title"] = "Ajustes del Sistema";
+    bool esSoloConsulta = Context.Session.GetString("Rol") == "Consulta";
+}
+
+<h3 class="fw-bold mb-4" style="color: var(--olivo-oscuro);">Ajustes y Preferencias del Sistema</h3>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<div class="row g-4">
+    <!-- Tarjeta 1: Apariencia e Idioma (Visible para Francis y para Hermanos) -->
+    <div class="@(esSoloConsulta ? "col-lg-8 mx-auto" : "col-lg-5")">
+        <div class="card card-olivo p-4 h-100">
+            <h5 class="fw-bold mb-3" style="color: var(--olivo-oscuro); border-bottom: 2px solid #c59b27; padding-bottom: 8px;">
+                Apariencia e Idioma
+            </h5>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold d-block">Tema Visual de la Interfaz</label>
+                <div class="btn-group w-100" role="group">
+                    <button type="button" id="btnClaro" class="btn btn-outline-success" onclick="cambiarTema('light')">
+                        Modo Claro
+                    </button>
+                    <button type="button" id="btnOscuro" class="btn btn-outline-dark" onclick="cambiarTema('dark')">
+                        Modo Oscuro
+                    </button>
+                </div>
+                <small class="text-muted d-block mt-1">Tu preferencia se guarda automáticamente en este navegador.</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="selectIdioma" class="form-label fw-bold">Idioma del Sistema</label>
+                <select id="selectIdioma" class="form-select notranslate" onchange="cambiarIdioma(this.value)">
+                    <option value="es">Español</option>
+                    <option value="ca">Català</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="it">Italiano</option>
+                    <option value="pt">Português</option>
+                    <option value="de">Deutsch</option>
+                </select>
+                <small class="text-muted d-block mt-1">Traduce automáticamente todas las pantallas, tablas y formularios.</small>
+            </div>
+        </div>
+    </div>
+
+    @if (!esSoloConsulta)
+    {
+        <!-- Tarjeta 2: Seguridad y Credenciales del Administrador (Solo Francis) -->
+        <div class="col-lg-7">
+            <div class="card card-olivo p-4 h-100" style="border-top-color: #c59b27;">
+                <h5 class="fw-bold mb-3" style="color: var(--olivo-oscuro); border-bottom: 2px solid #c59b27; padding-bottom: 8px;">
+                    Seguridad y Credenciales del Administrador
+                </h5>
+
+                <form asp-action="Ajustes" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nombre a Mostrar en Barra</label>
+                            <input type="text" name="nuevoNombre" value="@ViewBag.NombreCompleto" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nuevo Nombre de Usuario</label>
+                            <input type="text" name="nuevoUsuario" value="@ViewBag.NombreUsuario" class="form-control" autocomplete="off" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-danger">Contraseña Actual</label>
+                            <input type="password" name="claveActual" class="form-control" placeholder="Escribe tu contraseña actual" autocomplete="new-password" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nueva Contraseña</label>
+                            <input type="password" name="nuevaClave" class="form-control" placeholder="Dejar vacío para mantener la actual" autocomplete="new-password" />
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-olivo px-4">Guardar Cambios de Administrador</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tarjeta 3: Gestión de la Cuenta de Consulta (Hermanos) -->
+        <div class="col-12">
+            <div class="card card-olivo p-4" style="border-top-color: #3d4f22;">
+                <h5 class="fw-bold mb-2" style="color: var(--olivo-oscuro); border-bottom: 2px solid #c59b27; padding-bottom: 8px;">
+                    Gestión de Acceso — Cuenta de Hermanos (Solo Consulta)
+                </h5>
+                <p class="small text-muted mb-3">
+                    Como administrador, puedes modificar el usuario o la contraseña con la que tus hermanos acceden a consultar los balances y reportes.
+                </p>
+
+                <form asp-action="ActualizarCuentaHermanos" method="post">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Nombre Visible (Hermanos)</label>
+                            <input type="text" name="nombreHermanos" value="@ViewBag.NombreHermanos" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Usuario de Acceso (Hermanos)</label>
+                            <input type="text" name="usuarioHermanos" value="@ViewBag.UsuarioHermanos" class="form-control" autocomplete="off" required />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Nueva Contraseña (Hermanos)</label>
+                            <input type="text" name="claveHermanos" class="form-control" placeholder="Dejar vacío para mantener actual" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-outline-success fw-bold px-4">Actualizar Cuenta Hermanos</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function cambiarTema(tema) {
+            document.documentElement.setAttribute("data-theme", tema);
+            localStorage.setItem("melera_theme", tema);
+            actualizarBotonesTema(tema);
+        }
+
+        function actualizarBotonesTema(tema) {
+            const btnClaro = document.getElementById("btnClaro");
+            const btnOscuro = document.getElementById("btnOscuro");
+            if (btnClaro && btnOscuro) {
+                btnClaro.className = tema === "light" ? "btn btn-success" : "btn btn-outline-success";
+                btnOscuro.className = tema === "dark" ? "btn btn-warning fw-bold" : "btn btn-outline-secondary";
+            }
+        }
+
+        function cambiarIdioma(lang) {
+            if (typeof aplicarIdiomaGlobal === "function") {
+                aplicarIdiomaGlobal(lang);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const temaActual = localStorage.getItem("melera_theme") || "light";
+            const langActual = localStorage.getItem("melera_lang") || "es";
+            actualizarBotonesTema(temaActual);
+            const sel = /** @@type {HTMLSelectElement | null} */ (document.getElementById("selectIdioma"));
+            if (sel) sel.value = langActual;
+        });
+    </script>
+}

@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "Comuneros y Conceptos";
+    var comuneros = ViewBag.Comuneros as List<LaMeleraWeb.Models.Comunero>;
+    var c1 = ViewBag.Conceptos1 as List<LaMeleraWeb.Models.Concepto>;
+    var c2 = ViewBag.Conceptos2 as List<LaMeleraWeb.Models.Concepto>;
+    var c3 = ViewBag.Conceptos3 as List<LaMeleraWeb.Models.Concepto>;
+    var c4 = ViewBag.Conceptos4 as List<LaMeleraWeb.Models.Concepto>;
+}
+
+<h3 class="fw-bold mb-4" style="color: #3d4f22;">Administración de Comuneros y Catálogo de Conceptos</h3>
+
+<div class="row g-4">
+    <!-- Columna Izquierda: Comuneros (Altas y Bajas por venta/herencia) -->
+    <div class="col-lg-6">
+        <div class="card card-olivo p-3">
+            <h5 class="fw-bold mb-3" style="color: #3d4f22;">Comuneros Titulares</h5>
+
+            <form asp-action="AgregarComunero" method="post" class="row g-2 mb-3">
+                <div class="col-7">
+                    <input type="text" name="nombreCompleto" class="form-control form-control-sm" placeholder="Nombre del nuevo comunero" required />
+                </div>
+                <div class="col-3">
+                    <input type="text" name="telefono" class="form-control form-control-sm" placeholder="Teléfono" />
+                </div>
+                <div class="col-2 d-grid">
+                    <button type="submit" class="btn btn-olivo btn-sm">Alta</button>
+                </div>
+            </form>
+
+            <table class="table table-sm align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var com in comuneros!)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@com.NombreCompleto</td>
+                            <td>
+                                @if (com.Activo)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Baja (@com.FechaBaja?.ToString("dd/MM/yyyy"))</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (com.Activo)
+                                {
+                                    <form asp-action="BajaComunero" method="post" class="d-inline">
+                                        <input type="hidden" name="idComunero" value="@com.IdComunero" />
+                                        <input type="hidden" name="fechaBaja" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-0" onclick="return confirm('¿Dar de baja a este comunero por venta o herencia?')">Dar Baja</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Columna Derecha: Agregar Conceptos Nuevos -->
+    <div class="col-lg-6">
+        <div class="card card-olivo p-3">
+            <h5 class="fw-bold mb-3" style="color: #3d4f22;">Agregar Nuevo Concepto</h5>
+
+            <form asp-action="AgregarConcepto" method="post" class="row g-2 mb-3">
+                <div class="col-md-5">
+                    <select name="idApartado" class="form-select form-select-sm" required>
+                        <option value="1">Ingresos Comunidad</option>
+                        <option value="2">Gastos Zonas Comunes</option>
+                        <option value="3">Ingresos Olivar</option>
+                        <option value="4">Gastos Olivar</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="nombreConcepto" class="form-control form-control-sm" placeholder="Nombre del nuevo concepto" required />
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-olivo btn-sm">Crear</button>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="admiteLitros" value="true" id="chkLitros">
+                        <label class="form-check-label small text-muted" for="chkLitros">
+                            Este concepto registra litros (ej. combustible/gasoil)
+                        </label>
+                    </div>
+                </div>
+            </form>
+
+            <div class="small" style="max-height: 310px; overflow-y: auto;">
+                <p class="fw-bold mb-1 text-success">Ingresos Comunidad (@c1!.Count)</p>
+                <p class="text-muted mb-2">@string.Join(" · ", c1.Select(x => x.NombreConcepto))</p>
+
+                <p class="fw-bold mb-1 text-danger">Gastos Zonas Comunes (@c2!.Count)</p>
+                <p class="text-muted mb-2">@string.Join(" · ", c2.Select(x => x.NombreConcepto))</p>
+
+                <p class="fw-bold mb-1 text-success">Ingresos Olivar (@c3!.Count)</p>
+                <p class="text-muted mb-2">@string.Join(" · ", c3.Select(x => x.NombreConcepto))</p>
+
+                <p class="fw-bold mb-1 text-danger">Gastos Olivar (@c4!.Count)</p>
+                <p class="text-muted mb-0">@string.Join(" · ", c4.Select(x => x.NombreConcepto))</p>
+            </div>
+        </div>
+    </div>
+</div>

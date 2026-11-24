@@ -1,0 +1,298 @@
+﻿@model List<LaMeleraWeb.Models.MovimientoReporte>
+@{
+    ViewData["Title"] = "Panel Principal";
+    bool esSoloConsulta = Context.Session.GetString("Rol") == "Consulta";
+
+    decimal totalIngresos = (decimal)ViewBag.TotalIngresos;
+    decimal totalGastos = (decimal)ViewBag.TotalGastos;
+    decimal saldoDisp = (decimal)ViewBag.SaldoDisponible;
+
+    var gastosPorApartado = Model
+        .Where(x => x.Gasto > 0)
+        .GroupBy(x => x.Apartado)
+        .Select(g => new { Apartado = g.Key, Total = g.Sum(x => x.Gasto) })
+        .ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold mb-0" style="color: var(--olivo-oscuro);">Panel de Control - Cortijo La Melera</h2>
+        <p class="text-muted mb-0">Gestión Integral de la Comunidad y Producción Ecológica Picual</p>
+    </div>
+    @if (!esSoloConsulta)
+    {
+        <a asp-controller="Gestion" asp-action="Catalogos" class="btn btn-olivo">Gestionar Comuneros / Conceptos</a>
+    }
+</div>
+
+<!-- Tarjetas de Balance Global -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-olivo p-3">
+            <span class="text-muted small fw-bold text-uppercase">Total Ingresos Históricos</span>
+            <h3 class="fw-bold text-success mt-1">@totalIngresos.ToString("N2") €</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-olivo p-3" style="border-top-color: #b03a2e;">
+            <span class="text-muted small fw-bold text-uppercase">Total Gastos Históricos</span>
+            <h3 class="fw-bold text-danger mt-1">@totalGastos.ToString("N2") €</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-olivo p-3" style="border-top-color: #c59b27;">
+            <span class="text-muted small fw-bold text-uppercase">Saldo Neto Disponible</span>
+            <h3 class="fw-bold mt-1" style="color: var(--olivo-oscuro);">@saldoDisp.ToString("N2") €</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficas Visuales con Chart.js -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card card-olivo p-3 h-100">
+            <h6 class="fw-bold mb-2" style="color: var(--olivo-oscuro);">📊 Balance Global: Ingresos vs. Gastos</h6>
+            <div style="max-height: 220px; display: flex; justify-content: center;">
+                <canvas id="graficaBalance"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-olivo p-3 h-100">
+            <h6 class="fw-bold mb-2" style="color: var(--olivo-oscuro);">🫒 Distribución de Gastos Recientes</h6>
+            <div style="max-height: 220px; display: flex; justify-content: center;">
+                <canvas id="graficaGastos"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos Directos -->
+@if (!esSoloConsulta)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <a asp-controller="Movimientos" asp-action="IngresosComunidad" class="btn btn-outline-success w-100 py-3 fw-bold shadow-sm">
+                Ingreso Comunidad
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-controller="Movimientos" asp-action="GastosComunes" class="btn btn-outline-danger w-100 py-3 fw-bold shadow-sm">
+                Gasto Zonas Comunes
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-controller="Movimientos" asp-action="IngresosOlivar" class="btn btn-outline-success w-100 py-3 fw-bold shadow-sm">
+                Ingreso Olivar
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-controller="Movimientos" asp-action="GastosOlivar" class="btn btn-outline-danger w-100 py-3 fw-bold shadow-sm">
+                Gasto Olivar
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <a asp-controller="Gestion" asp-action="Cuotas" class="btn btn-outline-success w-100 py-3 fw-bold shadow-sm">
+                Consultar Estado Anual de Cuotas
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a asp-controller="Gestion" asp-action="Reportes" class="btn btn-olivo w-100 py-3 fw-bold shadow-sm">
+                Ver Libro Diario y Descargar PDF
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Últimos Movimientos con Buscador Lupita + Historial -->
+<div class="card card-olivo">
+    <div class="card-header py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="fw-bold" style="color: var(--olivo-oscuro);">Últimos Movimientos Registrados</span>
+            <div class="input-group input-group-sm" style="max-width: 360px;">
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <input type="text" id="buscadorInicio" class="form-control border-start-0" placeholder="Buscar movimiento rápido..." />
+                <button type="button" class="btn btn-outline-secondary" onclick="limpiarInicio()">Limpiar</button>
+            </div>
+        </div>
+        <div id="historialInicio" class="d-flex flex-wrap align-items-center gap-1 mt-2 small"></div>
+    </div>
+    <div class="table-responsive">
+        <table id="tablaInicio" class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Apartado</th>
+                    <th>Concepto</th>
+                    <th>Detalle / Factura</th>
+                    <th class="text-end">Ingreso</th>
+                    <th class="text-end">Gasto</th>
+                    @if (!esSoloConsulta)
+                    {
+                        <th class="text-center">Acción</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@(esSoloConsulta ? 6 : 7)" class="text-center text-muted py-4">Aún no hay movimientos registrados.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td><span class="badge bg-secondary">@item.Apartado</span></td>
+                            <td>@item.Concepto</td>
+                            <td class="small text-muted">
+                                @(item.DetalleExtra ?? item.Factura ?? "-")
+                                @if (!string.IsNullOrEmpty(item.RutaComprobante))
+                                {
+                                    <a href="@item.RutaComprobante" target="_blank" class="ms-1 text-decoration-none" title="Ver comprobante">📎</a>
+                                }
+                            </td>
+                            <td class="text-end text-success fw-bold">@(item.Ingreso > 0 ? item.Ingreso.ToString("N2") + " €" : "-")</td>
+                            <td class="text-end text-danger fw-bold">@(item.Gasto > 0 ? item.Gasto.ToString("N2") + " €" : "-")</td>
+                            @if (!esSoloConsulta)
+                            {
+                                <td class="text-center">
+                                    <a asp-controller="Movimientos" asp-action="Editar"
+                                       asp-route-idApartado="@item.IdApartado"
+                                       asp-route-idRegistro="@item.IdRegistro"
+                                       class="btn btn-sm btn-outline-primary py-0 px-2">Editar</a>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 1. Gráficas Chart.js
+        const ctxBalance = document.getElementById("graficaBalance");
+        if (ctxBalance) {
+            new Chart(ctxBalance, {
+                type: "bar",
+                data: {
+                    labels: ["Ingresos", "Gastos", "Saldo Neto"],
+                    datasets: [{
+                        label: "Euros (€)",
+                        data: [
+                                    @totalIngresos.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                    @totalGastos.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            @saldoDisp.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        ],
+                        backgroundColor: ["#198754", "#dc3545", "#c59b27"],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        const ctxGastos = document.getElementById("graficaGastos");
+        if (ctxGastos) {
+            const labelsGastos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(gastosPorApartado.Select(x => x.Apartado)));
+            const dataGastos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(gastosPorApartado.Select(x => x.Total)));
+
+            new Chart(ctxGastos, {
+                type: "doughnut",
+                data: {
+                    labels: labelsGastos.length ? labelsGastos : ["Sin gastos recientes"],
+                    datasets: [{
+                        data: dataGastos.length ? dataGastos : [1],
+                        backgroundColor: dataGastos.length ? ["#b03a2e", "#556b2f", "#c59b27", "#6c757d"] : ["#e9ecef"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: "bottom" } }
+                }
+            });
+        }
+
+        // 2. Buscador e historial aislado por usuario/rol
+        const perfilInicio = "@($"{Context.Session.GetInt32("IdUsuario") ?? 0}_{Context.Session.GetString("Rol") ?? "Anon"}")";
+        const KEY_HIST_INICIO = "melera_hist_inicio_" + perfilInicio;
+        const inputInicio = document.getElementById("buscadorInicio");
+        const contHistInicio = document.getElementById("historialInicio");
+        let timerHistInicio;
+
+        localStorage.removeItem("melera_hist_busqueda");
+        localStorage.removeItem("melera_hist_busqueda_");
+
+        function obtenerHistorial() {
+            try { return JSON.parse(localStorage.getItem(KEY_HIST_INICIO) || "[]"); }
+            catch { return []; }
+        }
+
+        function guardarEnHistorial(texto) {
+            const limpio = texto.trim();
+            if (limpio.length < 2) return;
+            let lista = obtenerHistorial().filter(x => x.toLowerCase() !== limpio.toLowerCase());
+            lista.unshift(limpio);
+            if (lista.length > 6) lista = lista.slice(0, 6);
+            localStorage.setItem(KEY_HIST_INICIO, JSON.stringify(lista));
+            renderizarHistorialInicio();
+        }
+
+        function renderizarHistorialInicio() {
+            if (!contHistInicio) return;
+            const lista = obtenerHistorial();
+            if (lista.length === 0) { contHistInicio.innerHTML = ""; return; }
+            contHistInicio.innerHTML = `<span class="text-muted me-1">Recientes:</span>` +
+                lista.map(item =>
+                    `<button type="button" class="badge rounded-pill text-bg-light border text-dark" style="cursor:pointer;" onclick="aplicarHistorialInicio('${item.replace(/'/g, "\\'")}')">${item}</button>`
+                ).join("");
+        }
+
+        function aplicarHistorialInicio(valor) {
+            if (!inputInicio) return;
+            inputInicio.value = valor;
+            filtrarTablaInicio(valor);
+        }
+
+        function filtrarTablaInicio(valor) {
+            const filtro = valor.toLowerCase().trim();
+            document.querySelectorAll("#tablaInicio tbody tr").forEach(fila => {
+                fila.style.display = fila.textContent.toLowerCase().includes(filtro) ? "" : "none";
+            });
+        }
+
+        function limpiarInicio() {
+            if (inputInicio) {
+                inputInicio.value = "";
+                filtrarTablaInicio("");
+            }
+            localStorage.removeItem(KEY_HIST_INICIO);
+            renderizarHistorialInicio();
+        }
+
+        if (inputInicio) {
+            inputInicio.addEventListener("input", function () {
+                filtrarTablaInicio(this.value);
+                clearTimeout(timerHistInicio);
+                timerHistInicio = setTimeout(() => guardarEnHistorial(this.value), 900);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", renderizarHistorialInicio);
+    </script>
+}

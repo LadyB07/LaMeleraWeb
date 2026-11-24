@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cortijo La Melera</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        :root {
+            --olivo-oscuro: #3d4f22;
+            --olivo-principal: #556b2f;
+            --olivo-suave: #eef2e6;
+            --dorado: #c59b27;
+            --bg-body: #f8f9f5;
+            --bg-card: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-card: rgba(0,0,0,0.06);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #181c14;
+            --bg-card: #23291e;
+            --text-main: #eef2e6;
+            --text-muted: #aeb8a2;
+            --olivo-oscuro: #a8c675;
+            --border-card: rgba(255,255,255,0.08);
+        }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: clip;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease;
+            top: 0 !important;
+        }
+
+        /* Ocultar barra superior de Google Translate */
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon, #goog-gt-tt, .goog-te-balloon-frame, iframe.skiptranslate {
+            display: none !important;
+        }
+
+        .skiptranslate {
+            display: none !important;
+        }
+
+        .navbar-olivo {
+            background-color: var(--olivo-principal);
+            border-bottom: 3px solid var(--dorado);
+            width: 100%;
+        }
+
+            .navbar-olivo .navbar-brand {
+                color: #ffffff !important;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .navbar-olivo .nav-link {
+                color: #ffffff !important;
+                font-weight: 500;
+                white-space: normal;
+                line-height: 1.2;
+                padding: 0.45rem 0.65rem !important;
+                font-size: 0.92rem;
+            }
+
+                .navbar-olivo .nav-link:hover, .navbar-olivo .nav-link.show {
+                    background-color: #3d4f22;
+                    border-radius: 6px;
+                }
+
+        .dropdown-menu-olivo {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-top: 3px solid var(--dorado);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+            .dropdown-menu-olivo .dropdown-item {
+                color: var(--text-main);
+                font-weight: 500;
+                padding: 0.5rem 1rem;
+            }
+
+                .dropdown-menu-olivo .dropdown-item:hover {
+                    background-color: var(--olivo-suave);
+                    color: #3d4f22;
+                }
+
+        .btn-olivo {
+            background-color: var(--olivo-principal);
+            color: #fff;
+            border: none;
+        }
+
+            .btn-olivo:hover {
+                background-color: #3d4f22;
+                color: #fff;
+            }
+
+        .card, .card-olivo {
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
+            border: none;
+            border-top: 4px solid var(--olivo-principal);
+            box-shadow: 0 4px 12px var(--border-card);
+        }
+
+        .card-header {
+            background-color: var(--bg-card) !important;
+            color: var(--olivo-oscuro) !important;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="dark"] .table {
+            color: var(--text-main);
+            border-color: #384230;
+        }
+
+        [data-theme="dark"] .table-light th {
+            background-color: #2d3526;
+            color: #eef2e6;
+        }
+
+        [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
+            background-color: #1c2118;
+            color: #eef2e6;
+            border-color: #46523c;
+        }
+    </style>
+    <script>
+        (function () {
+            const tema = localStorage.getItem("melera_theme") || "light";
+            document.documentElement.setAttribute("data-theme", tema);
+
+            // Sincronizar cookie de idioma antes de cargar la página para evitar que Google Translate se quede pegado
+            const langGuardado = localStorage.getItem("melera_lang") || "es";
+            if (langGuardado === "es") {
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + location.hostname;
+            } else {
+                const esperado = "/es/" + langGuardado;
+                if (!document.cookie.includes("googtrans=" + esperado)) {
+                    document.cookie = "googtrans=" + esperado + "; path=/;";
+                }
+            }
+        })();
+    </script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    @{
+        bool esSoloConsulta = Context.Session.GetString("Rol") == "Consulta";
+    }
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-olivo shadow-sm mb-4">
+            <div class="container-fluid px-3 px-xl-4">
+                <a class="navbar-brand d-flex align-items-center gap-2 notranslate" asp-controller="Home" asp-action="Index">
+                    <img src="~/img/logo-melera.jpg" alt="Logo" width="38" height="38" class="rounded-circle border border-warning bg-white" style="object-fit: cover;" />
+                    <span>Cortijo La Melera</span>
+                </a>
+                <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="menuPrincipal">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 flex-wrap align-items-lg-center gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio / Balance</a>
+                        </li>
+                        @if (!esSoloConsulta)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Ingresos
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-olivo">
+                                    <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="IngresosComunidad">Ingresos Comunidad</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="IngresosOlivar">Ingresos Olivar</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Gastos
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-olivo">
+                                    <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="GastosComunes">Gastos Zonas Comunes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="GastosOlivar">Gastos Olivar</a></li>
+                                </ul>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Gestion" asp-action="Cuotas">Control Cuotas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Gestion" asp-action="Reportes">Reportes / PDF</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="AcercaDe">Acerca de</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Gestion" asp-action="Ajustes">Ajustes</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center text-white gap-2 ms-lg-2 flex-shrink-0">
+                        <span class="small">
+                            Usuario: <strong class="notranslate">@Context.Session.GetString("NombreCompleto")</strong>
+                            @if (esSoloConsulta)
+                            {
+                                <span class="badge bg-warning text-dark ms-1">Solo Consulta</span>
+                            }
+                        </span>
+                        <a class="btn btn-sm btn-outline-light" asp-controller="Acceso" asp-action="CerrarSesion">Salir</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container pb-5">
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Mensaje"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @RenderBody()
+    </div>
+
+    <footer class="mt-auto py-3 border-top text-center small" style="border-color: var(--border-card) !important; color: var(--text-muted);">
+        <div class="container">
+            <span>&copy; 2026 <strong>Cortijo La Melera</strong> · Todos los derechos reservados.</span>
+            <span class="mx-2">|</span>
+            <span>Desarrollado por <strong style="color: var(--olivo-oscuro);">Lady Bohórquez &amp; Linda López</strong></span>
+        </div>
+    </footer>
+
+    <div id="google_translate_element" style="display:none;"></div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es',
+                includedLanguages: 'es,ca,en,fr,it,pt,de',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function limpiarCookiesTraduccion() {
+            const dominios = ["", location.hostname, "." + location.hostname];
+            const partes = location.hostname.split(".");
+            if (partes.length > 2) {
+                dominios.push("." + partes.slice(-2).join("."));
+            }
+            dominios.forEach(d => {
+                const domStr = d ? "; domain=" + d : "";
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/" + domStr;
+            });
+        }
+
+        function aplicarIdiomaGlobal(lang) {
+            localStorage.setItem("melera_lang", lang);
+            limpiarCookiesTraduccion();
+
+            if (lang !== "es") {
+                document.cookie = "googtrans=/es/" + lang + "; path=/;";
+            }
+            // Recarga limpia para traducir el 100% de la página sin dejar fragmentos en el idioma anterior
+            location.reload();
+        }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

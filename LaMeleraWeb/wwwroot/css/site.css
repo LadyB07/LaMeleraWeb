@@ -1,0 +1,100 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+@media print {
+    /* 1. Fuerza hoja Horizontal y reduce márgenes para quitar la URL y fecha */
+    @page {
+        size: landscape;
+        margin: 8mm;
+    }
+
+    /* 2. Oculta menús, barras y botones al generar el PDF */
+    .no-print, nav, header, footer, .btn, form {
+        display: none !important;
+    }
+
+    /* 3. Evita que Bootstrap corte la tabla a la derecha y ajusta el texto */
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    table {
+        width: 100% !important;
+        table-layout: fixed;
+        font-size: 8.5pt !important;
+    }
+
+    th, td {
+        padding: 4px 5px !important;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+/* Evita desbordamiento horizontal en toda la página */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Ajusta la barra verde para que todos los enlaces quepan al 100% y en cualquier idioma */
+header, .navbar, .navbar > .container, .navbar > .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    box-sizing: border-box;
+}
+
+.navbar-collapse {
+    flex-wrap: wrap !important;
+    justify-content: space-between;
+}
+
+.navbar-nav {
+    flex-wrap: wrap !important;
+    align-items: center;
+    gap: 2px 4px;
+}
+
+    .navbar-nav .nav-link {
+        white-space: normal !important;
+        font-size: 0.82rem !important;
+        padding: 4px 6px !important;
+        line-height: 1.15;
+    }
+
+.navbar-brand {
+    font-size: 1.05rem !important;
+    margin-right: 8px !important;
+    white-space: nowrap;
+}
