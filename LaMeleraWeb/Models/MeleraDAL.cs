@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Npgsql;
 using System.Data;
 
 namespace LaMeleraWeb.Models
@@ -16,13 +16,13 @@ namespace LaMeleraWeb.Models
         // 1. VALIDAR LOGIN
         public Usuario? ValidarUsuario(string nombreUsuario, string clave)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ValidarUsuario", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ValidarUsuario(@NombreUsuario, @Clave)", con);
             cmd.Parameters.AddWithValue("@NombreUsuario", nombreUsuario);
             cmd.Parameters.AddWithValue("@Clave", clave);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             if (dr.Read())
             {
                 return new Usuario
@@ -39,12 +39,12 @@ namespace LaMeleraWeb.Models
         public List<Comunero> ListarComuneros(bool soloActivos = true)
         {
             var lista = new List<Comunero>();
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ListarComuneros", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ListarComuneros(@SoloActivos)", con);
             cmd.Parameters.AddWithValue("@SoloActivos", soloActivos);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read())
             {
                 lista.Add(new Comunero
@@ -63,12 +63,12 @@ namespace LaMeleraWeb.Models
         public List<Concepto> ListarConceptos(int idApartado)
         {
             var lista = new List<Concepto>();
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ListarConceptosPorApartado", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ListarConceptosPorApartado(@IdApartado)", con);
             cmd.Parameters.AddWithValue("@IdApartado", idApartado);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read())
             {
                 lista.Add(new Concepto
@@ -84,8 +84,8 @@ namespace LaMeleraWeb.Models
 
         public void CrearConcepto(int idApartado, string nombreConcepto, bool admiteLitros)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_CrearConcepto", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_CrearConcepto(@IdApartado, @NombreConcepto, @AdmiteLitros)", con);
             cmd.Parameters.AddWithValue("@IdApartado", idApartado);
             cmd.Parameters.AddWithValue("@NombreConcepto", nombreConcepto);
             cmd.Parameters.AddWithValue("@AdmiteLitros", admiteLitros);
@@ -95,8 +95,8 @@ namespace LaMeleraWeb.Models
 
         public void GuardarComunero(string nombre, string? telefono)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_GuardarComunero", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_GuardarComunero(@NombreCompleto, @Telefono)", con);
             cmd.Parameters.AddWithValue("@NombreCompleto", nombre);
             cmd.Parameters.AddWithValue("@Telefono", (object?)telefono ?? DBNull.Value);
             con.Open();
@@ -105,8 +105,8 @@ namespace LaMeleraWeb.Models
 
         public void DarBajaComunero(int idComunero, DateTime fechaBaja)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_DarBajaComunero", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_DarBajaComunero(@IdComunero, @FechaBaja)", con);
             cmd.Parameters.AddWithValue("@IdComunero", idComunero);
             cmd.Parameters.AddWithValue("@FechaBaja", fechaBaja);
             con.Open();
@@ -116,8 +116,8 @@ namespace LaMeleraWeb.Models
         // 3. INSERCIÓN DE LOS 4 MÓDULOS
         public void InsertarIngresoComunidad(IngresoComunidad m, int idUsuario)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_InsertarIngresoComunidad", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_InsertarIngresoComunidad(@Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @Importe, @Notas, @IdUsuario)", con);
             cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
             cmd.Parameters.AddWithValue("@IdComunero", m.IdComunero);
             cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
@@ -133,8 +133,8 @@ namespace LaMeleraWeb.Models
         public void InsertarGasto(GastoGeneral m, int idUsuario, bool esOlivar)
         {
             string sp = esOlivar ? "sp_InsertarGastoOlivar" : "sp_InsertarGastoZonaComun";
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new(sp, con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new($"SELECT {sp}(@Fecha, @IdConcepto, @NroFacturaRecibo, @Litros, @Importe, @Notas, @RutaComprobante, @IdUsuario)", con);
             cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
             cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
             cmd.Parameters.AddWithValue("@NroFacturaRecibo", (object?)m.NroFacturaRecibo ?? DBNull.Value);
@@ -149,8 +149,8 @@ namespace LaMeleraWeb.Models
 
         public void InsertarIngresoOlivar(IngresoOlivar m, int idUsuario)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_InsertarIngresoOlivar", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_InsertarIngresoOlivar(@Fecha, @IdConcepto, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas, @IdUsuario)", con);
             cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
             cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
             cmd.Parameters.AddWithValue("@KgAceituna", (object?)m.KgAceituna ?? DBNull.Value);
@@ -167,12 +167,12 @@ namespace LaMeleraWeb.Models
         public List<EstadoCuotaAnual> ObtenerEstadoCuotas(int anio)
         {
             var lista = new List<EstadoCuotaAnual>();
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_EstadoCuotasAnual", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_EstadoCuotasAnual(@Anio)", con);
             cmd.Parameters.AddWithValue("@Anio", anio);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read())
             {
                 lista.Add(new EstadoCuotaAnual
@@ -200,8 +200,8 @@ namespace LaMeleraWeb.Models
         // 5. ACTUALIZAR CREDENCIALES DEL ADMINISTRADOR (AJUSTES)
         public (bool exito, string mensaje) ActualizarCredenciales(int idUsuario, string claveActual, string nuevoUsuario, string nuevoNombre, string? nuevaClave)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ActualizarCredenciales", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCredenciales(@IdUsuario, @ClaveActual, @NuevoNombreUsuario, @NuevoNombreCompleto, @NuevaClave)", con);
             cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
             cmd.Parameters.AddWithValue("@ClaveActual", claveActual);
             cmd.Parameters.AddWithValue("@NuevoNombreUsuario", nuevoUsuario);
@@ -209,7 +209,7 @@ namespace LaMeleraWeb.Models
             cmd.Parameters.AddWithValue("@NuevaClave", (object?)nuevaClave ?? DBNull.Value);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             if (dr.Read())
             {
                 return (Convert.ToInt32(dr["Resultado"]) == 1, dr["Mensaje"].ToString()!);
@@ -220,11 +220,11 @@ namespace LaMeleraWeb.Models
         // 6. GESTIONAR CUENTA DE HERMANOS (ROL CONSULTA)
         public (string usuario, string nombre) ObtenerCuentaConsulta()
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("SELECT TOP 1 NombreUsuario, NombreCompleto FROM Usuarios WHERE Rol = 'Consulta'", con);
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT NombreUsuario, NombreCompleto FROM Usuarios WHERE Rol = 'Consulta' LIMIT 1", con);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             if (dr.Read())
             {
                 return (dr["NombreUsuario"].ToString()!, dr["NombreCompleto"].ToString()!);
@@ -234,14 +234,14 @@ namespace LaMeleraWeb.Models
 
         public (bool exito, string mensaje) ActualizarCuentaConsulta(string nuevoUsuario, string nuevoNombre, string? nuevaClave)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ActualizarCuentaConsulta", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCuentaConsulta(@NuevoUsuario, @NuevoNombre, @NuevaClave)", con);
             cmd.Parameters.AddWithValue("@NuevoUsuario", nuevoUsuario);
             cmd.Parameters.AddWithValue("@NuevoNombre", nuevoNombre);
             cmd.Parameters.AddWithValue("@NuevaClave", (object?)nuevaClave ?? DBNull.Value);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             if (dr.Read())
             {
                 return (Convert.ToInt32(dr["Resultado"]) == 1, dr["Mensaje"].ToString()!);
@@ -253,15 +253,15 @@ namespace LaMeleraWeb.Models
         public List<MovimientoReporte> ObtenerReporte(DateTime inicio, DateTime fin, int? idApartado, int? idConcepto)
         {
             var lista = new List<MovimientoReporte>();
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ReporteMovimientos", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ReporteMovimientos(@FechaInicio, @FechaFin, @IdApartado, @IdConcepto)", con);
             cmd.Parameters.AddWithValue("@FechaInicio", inicio);
             cmd.Parameters.AddWithValue("@FechaFin", fin);
             cmd.Parameters.AddWithValue("@IdApartado", (object?)idApartado ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@IdConcepto", (object?)idConcepto ?? DBNull.Value);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read())
             {
                 lista.Add(new MovimientoReporte
@@ -286,13 +286,13 @@ namespace LaMeleraWeb.Models
         // 8. OBTENER Y EDITAR UN MOVIMIENTO EXISTENTE
         public MovimientoEdicion? ObtenerMovimientoPorId(int idApartado, int idRegistro)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_ObtenerMovimientoPorId", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ObtenerMovimientoPorId(@IdApartado, @IdRegistro)", con);
             cmd.Parameters.AddWithValue("@IdApartado", idApartado);
             cmd.Parameters.AddWithValue("@IdRegistro", idRegistro);
             con.Open();
 
-            using SqlDataReader dr = cmd.ExecuteReader();
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
             if (dr.Read())
             {
                 return new MovimientoEdicion
@@ -318,8 +318,8 @@ namespace LaMeleraWeb.Models
 
         public void EditarMovimiento(MovimientoEdicion m)
         {
-            using SqlConnection con = new(_cadenaConexion);
-            using SqlCommand cmd = new("sp_EditarMovimiento", con) { CommandType = CommandType.StoredProcedure };
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_EditarMovimiento(@IdApartado, @IdRegistro, @Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @NroFacturaRecibo, @Litros, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas)", con);
             cmd.Parameters.AddWithValue("@IdApartado", m.IdApartado);
             cmd.Parameters.AddWithValue("@IdRegistro", m.IdRegistro);
             cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
