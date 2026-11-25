@@ -178,10 +178,19 @@
                             @if (!esSoloConsulta)
                             {
                                 <td class="text-center no-print">
-                                    <a asp-controller="Movimientos" asp-action="Editar"
-                                       asp-route-idApartado="@m.IdApartado"
-                                       asp-route-idRegistro="@m.IdRegistro"
-                                       class="btn btn-sm btn-outline-primary py-0 px-2">Editar</a>
+                                    <div class="d-inline-flex gap-1">
+                                        <a asp-controller="Movimientos" asp-action="Editar"
+                                           asp-route-idApartado="@m.IdApartado"
+                                           asp-route-idRegistro="@m.IdRegistro"
+                                           class="btn btn-sm btn-outline-primary py-0 px-2">Editar</a>
+
+                                        <form asp-controller="Movimientos" asp-action="Eliminar" method="post" class="d-inline"
+                                              onsubmit="return confirm('¿Seguro que deseas eliminar este movimiento de @m.Concepto (@m.Fecha.ToString("dd/MM/yyyy"))? Esta acción no se puede deshacer.');">
+                                            <input type="hidden" name="idApartado" value="@m.IdApartado" />
+                                            <input type="hidden" name="idRegistro" value="@m.IdRegistro" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Eliminar</button>
+                                        </form>
+                                    </div>
                                 </td>
                             }
                         </tr>
