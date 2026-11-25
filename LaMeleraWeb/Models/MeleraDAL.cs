@@ -272,3 +272,71 @@ namespace LaMeleraWeb.Models
                     Fecha = Convert.ToDateTime(dr["Fecha"]),
                     Apartado = dr["Apartado"].ToString()!,
                     Concepto = dr["Concepto"].ToString()!,
+                    DetalleExtra = dr["DetalleExtra"] == DBNull.Value ? null : dr["DetalleExtra"].ToString(),
+                    Factura = dr["Factura"] == DBNull.Value ? null : dr["Factura"].ToString(),
+                    Litros = dr["Litros"] == DBNull.Value ? null : Convert.ToDecimal(dr["Litros"]),
+                    Ingreso = Convert.ToDecimal(dr["Ingreso"]),
+                    Gasto = Convert.ToDecimal(dr["Gasto"]),
+                    Notas = dr["Notas"] == DBNull.Value ? null : dr["Notas"].ToString(),
+                    RutaComprobante = dr["RutaComprobante"] == DBNull.Value ? null : dr["RutaComprobante"].ToString()
+                });
+            }
+            return lista;
+        }
+
+        // 8. OBTENER Y EDITAR UN MOVIMIENTO EXISTENTE
+        public MovimientoEdicion? ObtenerMovimientoPorId(int idApartado, int idRegistro)
+        {
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ObtenerMovimientoPorId(@IdApartado, @IdRegistro)", con);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = idApartado;
+            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = idRegistro;
+            con.Open();
+
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                return new MovimientoEdicion
+                {
+                    IdRegistro = Convert.ToInt32(dr["IdRegistro"]),
+                    IdApartado = Convert.ToInt32(dr["IdApartado"]),
+                    Fecha = Convert.ToDateTime(dr["Fecha"]),
+                    IdComunero = dr["IdComunero"] == DBNull.Value ? null : Convert.ToInt32(dr["IdComunero"]),
+                    IdConcepto = Convert.ToInt32(dr["IdConcepto"]),
+                    PeriodoMes = dr["PeriodoMes"] == DBNull.Value ? null : Convert.ToInt32(dr["PeriodoMes"]),
+                    PeriodoAnio = dr["PeriodoAnio"] == DBNull.Value ? null : Convert.ToInt32(dr["PeriodoAnio"]),
+                    NroFacturaRecibo = dr["NroFacturaRecibo"] == DBNull.Value ? null : dr["NroFacturaRecibo"].ToString(),
+                    Litros = dr["Litros"] == DBNull.Value ? null : Convert.ToDecimal(dr["Litros"]),
+                    KgAceituna = dr["KgAceituna"] == DBNull.Value ? null : Convert.ToDecimal(dr["KgAceite"]),
+                    KgAceite = dr["KgAceite"] == DBNull.Value ? null : Convert.ToDecimal(dr["KgAceite"]),
+                    PrecioPorKg = dr["PrecioPorKg"] == DBNull.Value ? null : Convert.ToDecimal(dr["PrecioPorKg"]),
+                    Importe = Convert.ToDecimal(dr["Importe"]),
+                    Notas = dr["Notas"] == DBNull.Value ? null : dr["Notas"].ToString()
+                };
+            }
+            return null;
+        }
+
+        public void EditarMovimiento(MovimientoEdicion m)
+        {
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_EditarMovimiento(@IdApartado, @IdRegistro, @Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @NroFacturaRecibo, @Litros, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas)", con);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = m.IdApartado;
+            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = m.IdRegistro;
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha.Date;
+            cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = (object?)m.IdComunero ?? DBNull.Value;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
+            cmd.Parameters.Add("@PeriodoMes", NpgsqlDbType.Integer).Value = (object?)m.PeriodoMes ?? DBNull.Value;
+            cmd.Parameters.Add("@PeriodoAnio", NpgsqlDbType.Integer).Value = (object?)m.PeriodoAnio ?? DBNull.Value;
+            cmd.Parameters.Add("@NroFacturaRecibo", NpgsqlDbType.Varchar).Value = (object?)m.NroFacturaRecibo ?? DBNull.Value;
+            cmd.Parameters.Add("@Litros", NpgsqlDbType.Numeric).Value = (object?)m.Litros ?? DBNull.Value;
+            cmd.Parameters.Add("@KgAceituna", NpgsqlDbType.Numeric).Value = (object?)m.KgAceituna ?? DBNull.Value;
+            cmd.Parameters.Add("@KgAceite", NpgsqlDbType.Numeric).Value = (object?)m.KgAceite ?? DBNull.Value;
+            cmd.Parameters.Add("@PrecioPorKg", NpgsqlDbType.Numeric).Value = (object?)m.PrecioPorKg ?? DBNull.Value;
+            cmd.Parameters.Add("@Importe", NpgsqlDbType.Numeric).Value = m.Importe;
+            cmd.Parameters.Add("@Notas", NpgsqlDbType.Varchar).Value = (object?)m.Notas ?? DBNull.Value;
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
+    }
+}
