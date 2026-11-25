@@ -187,4 +187,88 @@ namespace LaMeleraWeb.Models
                     May = Convert.ToDecimal(dr["May"]),
                     Jun = Convert.ToDecimal(dr["Jun"]),
                     Jul = Convert.ToDecimal(dr["Jul"]),
-                    Ago = Convert
+                    Ago = Convert.ToDecimal(dr["Ago"]),
+                    Sep = Convert.ToDecimal(dr["Sep"]),
+                    Oct = Convert.ToDecimal(dr["Oct"]),
+                    Nov = Convert.ToDecimal(dr["Nov"]),
+                    Dic = Convert.ToDecimal(dr["Dic"]),
+                    TotalPagado = Convert.ToDecimal(dr["TotalPagado"])
+                });
+            }
+            return lista;
+        }
+
+        // 5. ACTUALIZAR CREDENCIALES DEL ADMINISTRADOR (AJUSTES)
+        public (bool exito, string mensaje) ActualizarCredenciales(int idUsuario, string claveActual, string nuevoUsuario, string nuevoNombre, string? nuevaClave)
+        {
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCredenciales(@IdUsuario, @ClaveActual, @NuevoNombreUsuario, @NuevoNombreCompleto, @NuevaClave)", con);
+            cmd.Parameters.Add("@IdUsuario", NpgsqlDbType.Integer).Value = idUsuario;
+            cmd.Parameters.Add("@ClaveActual", NpgsqlDbType.Varchar).Value = claveActual;
+            cmd.Parameters.Add("@NuevoNombreUsuario", NpgsqlDbType.Varchar).Value = nuevoUsuario;
+            cmd.Parameters.Add("@NuevoNombreCompleto", NpgsqlDbType.Varchar).Value = nuevoNombre;
+            cmd.Parameters.Add("@NuevaClave", NpgsqlDbType.Varchar).Value = (object?)nuevaClave ?? DBNull.Value;
+            con.Open();
+
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                return (Convert.ToInt32(dr["Resultado"]) == 1, dr["Mensaje"].ToString()!);
+            }
+            return (false, "Error inesperado al actualizar.");
+        }
+
+        // 6. GESTIONAR CUENTA DE HERMANOS (ROL CONSULTA)
+        public (string usuario, string nombre) ObtenerCuentaConsulta()
+        {
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT NombreUsuario, NombreCompleto FROM Usuarios WHERE Rol = 'Consulta' LIMIT 1", con);
+            con.Open();
+
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                return (dr["NombreUsuario"].ToString()!, dr["NombreCompleto"].ToString()!);
+            }
+            return ("Hermanos", "Hermanos Comuneros");
+        }
+
+        public (bool exito, string mensaje) ActualizarCuentaConsulta(string nuevoUsuario, string nuevoNombre, string? nuevaClave)
+        {
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCuentaConsulta(@NuevoUsuario, @NuevoNombre, @NuevaClave)", con);
+            cmd.Parameters.Add("@NuevoUsuario", NpgsqlDbType.Varchar).Value = nuevoUsuario;
+            cmd.Parameters.Add("@NuevoNombre", NpgsqlDbType.Varchar).Value = nuevoNombre;
+            cmd.Parameters.Add("@NuevaClave", NpgsqlDbType.Varchar).Value = (object?)nuevaClave ?? DBNull.Value;
+            con.Open();
+
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                return (Convert.ToInt32(dr["Resultado"]) == 1, dr["Mensaje"].ToString()!);
+            }
+            return (false, "Error inesperado al actualizar la cuenta de hermanos.");
+        }
+
+        // 7. REPORTE LIBRO DIARIO
+        public List<MovimientoReporte> ObtenerReporte(DateTime inicio, DateTime fin, int? idApartado, int? idConcepto)
+        {
+            var lista = new List<MovimientoReporte>();
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT * FROM sp_ReporteMovimientos(@FechaInicio, @FechaFin, @IdApartado, @IdConcepto)", con);
+            cmd.Parameters.Add("@FechaInicio", NpgsqlDbType.Date).Value = inicio.Date;
+            cmd.Parameters.Add("@FechaFin", NpgsqlDbType.Date).Value = fin.Date;
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = (object?)idApartado ?? DBNull.Value;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = (object?)idConcepto ?? DBNull.Value;
+            con.Open();
+
+            using NpgsqlDataReader dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                lista.Add(new MovimientoReporte
+                {
+                    IdRegistro = Convert.ToInt32(dr["IdRegistro"]),
+                    IdApartado = Convert.ToInt32(dr["IdApartado"]),
+                    Fecha = Convert.ToDateTime(dr["Fecha"]),
+                    Apartado = dr["Apartado"].ToString()!,
+                    Concepto = dr["Concepto"].ToString()!,
