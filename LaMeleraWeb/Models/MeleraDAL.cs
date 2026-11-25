@@ -338,5 +338,15 @@ namespace LaMeleraWeb.Models
             con.Open();
             cmd.ExecuteNonQuery();
         }
+        
+        public void EliminarMovimiento(int idApartado, int idRegistro)
+        {
+            using NpgsqlConnection con = new(_cadenaConexion);
+            using NpgsqlCommand cmd = new("SELECT sp_EliminarMovimiento(@IdApartado, @IdRegistro)", con);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = idApartado;
+            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = idRegistro;
+            con.Open();
+            cmd.ExecuteNonQuery();
+        }
     }
 }
