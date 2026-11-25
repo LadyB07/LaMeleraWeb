@@ -155,6 +155,21 @@ namespace LaMeleraWeb.Controllers
         }
 
         // ==========================================
+        // 6. ELIMINAR MOVIMIENTO EXISTENTE (SOLO ADMIN)
+        // ==========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Eliminar(int idApartado, int idRegistro)
+        {
+            if (ObtenerUsuarioSesion() == null) return RedirectToAction("Login", "Acceso");
+            if (EsSoloConsulta()) return RedirectToAction("Index", "Home");
+
+            _dal.EliminarMovimiento(idApartado, idRegistro);
+            TempData["Mensaje"] = "Movimiento eliminado correctamente.";
+            return RedirectToAction("Reportes", "Gestion");
+        }
+
+        // ==========================================
         // AUXILIAR: GUARDAR COMPROBANTE (PDF / IMAGEN)
         // ==========================================
         private async Task<string?> GuardarArchivoComprobante(IFormFile? archivo)
