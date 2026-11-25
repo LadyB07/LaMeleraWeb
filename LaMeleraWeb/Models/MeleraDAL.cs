@@ -109,7 +109,7 @@ namespace LaMeleraWeb.Models
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_DarBajaComunero(@IdComunero, @FechaBaja)", con);
             cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = idComunero;
-            cmd.Parameters.Add("@FechaBaja", NpgsqlDbType.Date).Value = fechaBaja;
+            cmd.Parameters.Add("@FechaBaja", NpgsqlDbType.Date).Value = fechaBaja.Date;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -119,7 +119,7 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_InsertarIngresoComunidad(@Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @Importe, @Notas, @IdUsuario)", con);
-            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha.Date;
             cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = m.IdComunero;
             cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
             cmd.Parameters.Add("@PeriodoMes", NpgsqlDbType.Integer).Value = (object?)m.PeriodoMes ?? DBNull.Value;
@@ -136,7 +136,7 @@ namespace LaMeleraWeb.Models
             string sp = esOlivar ? "sp_InsertarGastoOlivar" : "sp_InsertarGastoZonaComun";
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new($"SELECT {sp}(@Fecha, @IdConcepto, @NroFacturaRecibo, @Litros, @Importe, @Notas, @RutaComprobante, @IdUsuario)", con);
-            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha.Date;
             cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
             cmd.Parameters.Add("@NroFacturaRecibo", NpgsqlDbType.Varchar).Value = (object?)m.NroFacturaRecibo ?? DBNull.Value;
             cmd.Parameters.Add("@Litros", NpgsqlDbType.Numeric).Value = (object?)m.Litros ?? DBNull.Value;
@@ -152,7 +152,7 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_InsertarIngresoOlivar(@Fecha, @IdConcepto, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas, @IdUsuario)", con);
-            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha.Date;
             cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
             cmd.Parameters.Add("@KgAceituna", NpgsqlDbType.Numeric).Value = (object?)m.KgAceituna ?? DBNull.Value;
             cmd.Parameters.Add("@KgAceite", NpgsqlDbType.Numeric).Value = (object?)m.KgAceite ?? DBNull.Value;
@@ -187,156 +187,4 @@ namespace LaMeleraWeb.Models
                     May = Convert.ToDecimal(dr["May"]),
                     Jun = Convert.ToDecimal(dr["Jun"]),
                     Jul = Convert.ToDecimal(dr["Jul"]),
-                    Ago = Convert.ToDecimal(dr["Ago"]),
-                    Sep = Convert.ToDecimal(dr["Sep"]),
-                    Oct = Convert.ToDecimal(dr["Oct"]),
-                    Nov = Convert.ToDecimal(dr["Nov"]),
-                    Dic = Convert.ToDecimal(dr["Dic"]),
-                    TotalPagado = Convert.ToDecimal(dr["TotalPagado"])
-                });
-            }
-            return lista;
-        }
-
-        // 5. ACTUALIZAR CREDENCIALES DEL ADMINISTRADOR (AJUSTES)
-        public (bool exito, string mensaje) ActualizarCredenciales(int idUsuario, string claveActual, string nuevoUsuario, string nuevoNombre, string? nuevaClave)
-        {
-            using NpgsqlConnection con = new(_cadenaConexion);
-            using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCredenciales(@IdUsuario, @ClaveActual, @NuevoNombreUsuario, @NuevoNombreCompleto, @NuevaClave)", con);
-            cmd.Parameters.Add("@IdUsuario", NpgsqlDbType.Integer).Value = idUsuario;
-            cmd.Parameters.Add("@ClaveActual", NpgsqlDbType.Varchar).Value = claveActual;
-            cmd.Parameters.Add("@NuevoNombreUsuario", NpgsqlDbType.Varchar).Value = nuevoUsuario;
-            cmd.Parameters.Add("@NuevoNombreCompleto", NpgsqlDbType.Varchar).Value = nuevoNombre;
-            cmd.Parameters.Add("@NuevaClave", NpgsqlDbType.Varchar).Value = (object?)nuevaClave ?? DBNull.Value;
-            con.Open();
-
-            using NpgsqlDataReader dr = cmd.ExecuteReader();
-            if (dr.Read())
-            {
-                return (Convert.ToInt32(dr["Resultado"]) == 1, dr["Mensaje"].ToString()!);
-            }
-            return (false, "Error inesperado al actualizar.");
-        }
-
-        // 6. GESTIONAR CUENTA DE HERMANOS (ROL CONSULTA)
-        public (string usuario, string nombre) ObtenerCuentaConsulta()
-        {
-            using NpgsqlConnection con = new(_cadenaConexion);
-            using NpgsqlCommand cmd = new("SELECT NombreUsuario, NombreCompleto FROM Usuarios WHERE Rol = 'Consulta' LIMIT 1", con);
-            con.Open();
-
-            using NpgsqlDataReader dr = cmd.ExecuteReader();
-            if (dr.Read())
-            {
-                return (dr["NombreUsuario"].ToString()!, dr["NombreCompleto"].ToString()!);
-            }
-            return ("Hermanos", "Hermanos Comuneros");
-        }
-
-        public (bool exito, string mensaje) ActualizarCuentaConsulta(string nuevoUsuario, string nuevoNombre, string? nuevaClave)
-        {
-            using NpgsqlConnection con = new(_cadenaConexion);
-            using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCuentaConsulta(@NuevoUsuario, @NuevoNombre, @NuevaClave)", con);
-            cmd.Parameters.Add("@NuevoUsuario", NpgsqlDbType.Varchar).Value = nuevoUsuario;
-            cmd.Parameters.Add("@NuevoNombre", NpgsqlDbType.Varchar).Value = nuevoNombre;
-            cmd.Parameters.Add("@NuevaClave", NpgsqlDbType.Varchar).Value = (object?)nuevaClave ?? DBNull.Value;
-            con.Open();
-
-            using NpgsqlDataReader dr = cmd.ExecuteReader();
-            if (dr.Read())
-            {
-                return (Convert.ToInt32(dr["Resultado"]) == 1, dr["Mensaje"].ToString()!);
-            }
-            return (false, "Error inesperado al actualizar la cuenta de hermanos.");
-        }
-
-        // 7. REPORTE LIBRO DIARIO
-        public List<MovimientoReporte> ObtenerReporte(DateTime inicio, DateTime fin, int? idApartado, int? idConcepto)
-        {
-            var lista = new List<MovimientoReporte>();
-            using NpgsqlConnection con = new(_cadenaConexion);
-            using NpgsqlCommand cmd = new("SELECT * FROM sp_ReporteMovimientos(@FechaInicio, @FechaFin, @IdApartado, @IdConcepto)", con);
-            cmd.Parameters.Add("@FechaInicio", NpgsqlDbType.Timestamp).Value = inicio;
-            cmd.Parameters.Add("@FechaFin", NpgsqlDbType.Timestamp).Value = fin;
-            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = (object?)idApartado ?? DBNull.Value;
-            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = (object?)idConcepto ?? DBNull.Value;
-            con.Open();
-
-            using NpgsqlDataReader dr = cmd.ExecuteReader();
-            while (dr.Read())
-            {
-                lista.Add(new MovimientoReporte
-                {
-                    IdRegistro = Convert.ToInt32(dr["IdRegistro"]),
-                    IdApartado = Convert.ToInt32(dr["IdApartado"]),
-                    Fecha = Convert.ToDateTime(dr["Fecha"]),
-                    Apartado = dr["Apartado"].ToString()!,
-                    Concepto = dr["Concepto"].ToString()!,
-                    DetalleExtra = dr["DetalleExtra"] == DBNull.Value ? null : dr["DetalleExtra"].ToString(),
-                    Factura = dr["Factura"] == DBNull.Value ? null : dr["Factura"].ToString(),
-                    Litros = dr["Litros"] == DBNull.Value ? null : Convert.ToDecimal(dr["Litros"]),
-                    Ingreso = Convert.ToDecimal(dr["Ingreso"]),
-                    Gasto = Convert.ToDecimal(dr["Gasto"]),
-                    Notas = dr["Notas"] == DBNull.Value ? null : dr["Notas"].ToString(),
-                    RutaComprobante = dr["RutaComprobante"] == DBNull.Value ? null : dr["RutaComprobante"].ToString()
-                });
-            }
-            return lista;
-        }
-
-        // 8. OBTENER Y EDITAR UN MOVIMIENTO EXISTENTE
-        public MovimientoEdicion? ObtenerMovimientoPorId(int idApartado, int idRegistro)
-        {
-            using NpgsqlConnection con = new(_cadenaConexion);
-            using NpgsqlCommand cmd = new("SELECT * FROM sp_ObtenerMovimientoPorId(@IdApartado, @IdRegistro)", con);
-            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = idApartado;
-            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = idRegistro;
-            con.Open();
-
-            using NpgsqlDataReader dr = cmd.ExecuteReader();
-            if (dr.Read())
-            {
-                return new MovimientoEdicion
-                {
-                    IdRegistro = Convert.ToInt32(dr["IdRegistro"]),
-                    IdApartado = Convert.ToInt32(dr["IdApartado"]),
-                    Fecha = Convert.ToDateTime(dr["Fecha"]),
-                    IdComunero = dr["IdComunero"] == DBNull.Value ? null : Convert.ToInt32(dr["IdComunero"]),
-                    IdConcepto = Convert.ToInt32(dr["IdConcepto"]),
-                    PeriodoMes = dr["PeriodoMes"] == DBNull.Value ? null : Convert.ToInt32(dr["PeriodoMes"]),
-                    PeriodoAnio = dr["PeriodoAnio"] == DBNull.Value ? null : Convert.ToInt32(dr["PeriodoAnio"]),
-                    NroFacturaRecibo = dr["NroFacturaRecibo"] == DBNull.Value ? null : dr["NroFacturaRecibo"].ToString(),
-                    Litros = dr["Litros"] == DBNull.Value ? null : Convert.ToDecimal(dr["Litros"]),
-                    KgAceituna = dr["KgAceituna"] == DBNull.Value ? null : Convert.ToDecimal(dr["KgAceituna"]),
-                    KgAceite = dr["KgAceite"] == DBNull.Value ? null : Convert.ToDecimal(dr["KgAceite"]),
-                    PrecioPorKg = dr["PrecioPorKg"] == DBNull.Value ? null : Convert.ToDecimal(dr["PrecioPorKg"]),
-                    Importe = Convert.ToDecimal(dr["Importe"]),
-                    Notas = dr["Notas"] == DBNull.Value ? null : dr["Notas"].ToString()
-                };
-            }
-            return null;
-        }
-
-        public void EditarMovimiento(MovimientoEdicion m)
-        {
-            using NpgsqlConnection con = new(_cadenaConexion);
-            using NpgsqlCommand cmd = new("SELECT sp_EditarMovimiento(@IdApartado, @IdRegistro, @Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @NroFacturaRecibo, @Litros, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas)", con);
-            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = m.IdApartado;
-            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = m.IdRegistro;
-            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
-            cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = (object?)m.IdComunero ?? DBNull.Value;
-            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
-            cmd.Parameters.Add("@PeriodoMes", NpgsqlDbType.Integer).Value = (object?)m.PeriodoMes ?? DBNull.Value;
-            cmd.Parameters.Add("@PeriodoAnio", NpgsqlDbType.Integer).Value = (object?)m.PeriodoAnio ?? DBNull.Value;
-            cmd.Parameters.Add("@NroFacturaRecibo", NpgsqlDbType.Varchar).Value = (object?)m.NroFacturaRecibo ?? DBNull.Value;
-            cmd.Parameters.Add("@Litros", NpgsqlDbType.Numeric).Value = (object?)m.Litros ?? DBNull.Value;
-            cmd.Parameters.Add("@KgAceituna", NpgsqlDbType.Numeric).Value = (object?)m.KgAceituna ?? DBNull.Value;
-            cmd.Parameters.Add("@KgAceite", NpgsqlDbType.Numeric).Value = (object?)m.KgAceite ?? DBNull.Value;
-            cmd.Parameters.Add("@PrecioPorKg", NpgsqlDbType.Numeric).Value = (object?)m.PrecioPorKg ?? DBNull.Value;
-            cmd.Parameters.Add("@Importe", NpgsqlDbType.Numeric).Value = m.Importe;
-            cmd.Parameters.Add("@Notas", NpgsqlDbType.Varchar).Value = (object?)m.Notas ?? DBNull.Value;
-            con.Open();
-            cmd.ExecuteNonQuery();
-        }
-    }
-}
+                    Ago = Convert
