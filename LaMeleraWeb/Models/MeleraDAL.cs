@@ -1,4 +1,5 @@
 using Npgsql;
+using NpgsqlTypes;
 using System.Data;
 
 namespace LaMeleraWeb.Models
