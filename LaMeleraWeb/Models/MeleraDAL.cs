@@ -19,8 +19,8 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ValidarUsuario(@NombreUsuario, @Clave)", con);
-            cmd.Parameters.AddWithValue("@NombreUsuario", nombreUsuario);
-            cmd.Parameters.AddWithValue("@Clave", clave);
+            cmd.Parameters.Add("@NombreUsuario", NpgsqlDbType.Varchar).Value = nombreUsuario;
+            cmd.Parameters.Add("@Clave", NpgsqlDbType.Varchar).Value = clave;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -42,7 +42,7 @@ namespace LaMeleraWeb.Models
             var lista = new List<Comunero>();
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ListarComuneros(@SoloActivos)", con);
-            cmd.Parameters.AddWithValue("@SoloActivos", soloActivos);
+            cmd.Parameters.Add("@SoloActivos", NpgsqlDbType.Boolean).Value = soloActivos;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -66,7 +66,7 @@ namespace LaMeleraWeb.Models
             var lista = new List<Concepto>();
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ListarConceptosPorApartado(@IdApartado)", con);
-            cmd.Parameters.AddWithValue("@IdApartado", idApartado);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = idApartado;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -87,9 +87,9 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_CrearConcepto(@IdApartado, @NombreConcepto, @AdmiteLitros)", con);
-            cmd.Parameters.AddWithValue("@IdApartado", idApartado);
-            cmd.Parameters.AddWithValue("@NombreConcepto", nombreConcepto);
-            cmd.Parameters.AddWithValue("@AdmiteLitros", admiteLitros);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = idApartado;
+            cmd.Parameters.Add("@NombreConcepto", NpgsqlDbType.Varchar).Value = nombreConcepto;
+            cmd.Parameters.Add("@AdmiteLitros", NpgsqlDbType.Boolean).Value = admiteLitros;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -98,8 +98,8 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_GuardarComunero(@NombreCompleto, @Telefono)", con);
-            cmd.Parameters.AddWithValue("@NombreCompleto", nombre);
-            cmd.Parameters.AddWithValue("@Telefono", (object?)telefono ?? DBNull.Value);
+            cmd.Parameters.Add("@NombreCompleto", NpgsqlDbType.Varchar).Value = nombre;
+            cmd.Parameters.Add("@Telefono", NpgsqlDbType.Varchar).Value = (object?)telefono ?? DBNull.Value;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -108,8 +108,8 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_DarBajaComunero(@IdComunero, @FechaBaja)", con);
-            cmd.Parameters.AddWithValue("@IdComunero", idComunero);
-            cmd.Parameters.AddWithValue("@FechaBaja", fechaBaja);
+            cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = idComunero;
+            cmd.Parameters.Add("@FechaBaja", NpgsqlDbType.Date).Value = fechaBaja;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -119,14 +119,14 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_InsertarIngresoComunidad(@Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @Importe, @Notas, @IdUsuario)", con);
-            cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
-            cmd.Parameters.AddWithValue("@IdComunero", m.IdComunero);
-            cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
-            cmd.Parameters.AddWithValue("@PeriodoMes", (object?)m.PeriodoMes ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PeriodoAnio", (object?)m.PeriodoAnio ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Importe", m.Importe);
-            cmd.Parameters.AddWithValue("@Notas", (object?)m.Notas ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = m.IdComunero;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
+            cmd.Parameters.Add("@PeriodoMes", NpgsqlDbType.Integer).Value = (object?)m.PeriodoMes ?? DBNull.Value;
+            cmd.Parameters.Add("@PeriodoAnio", NpgsqlDbType.Integer).Value = (object?)m.PeriodoAnio ?? DBNull.Value;
+            cmd.Parameters.Add("@Importe", NpgsqlDbType.Numeric).Value = m.Importe;
+            cmd.Parameters.Add("@Notas", NpgsqlDbType.Varchar).Value = (object?)m.Notas ?? DBNull.Value;
+            cmd.Parameters.Add("@IdUsuario", NpgsqlDbType.Integer).Value = idUsuario;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -136,14 +136,14 @@ namespace LaMeleraWeb.Models
             string sp = esOlivar ? "sp_InsertarGastoOlivar" : "sp_InsertarGastoZonaComun";
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new($"SELECT {sp}(@Fecha, @IdConcepto, @NroFacturaRecibo, @Litros, @Importe, @Notas, @RutaComprobante, @IdUsuario)", con);
-            cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
-            cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
-            cmd.Parameters.AddWithValue("@NroFacturaRecibo", (object?)m.NroFacturaRecibo ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Litros", (object?)m.Litros ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Importe", m.Importe);
-            cmd.Parameters.AddWithValue("@Notas", (object?)m.Notas ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@RutaComprobante", (object?)m.RutaComprobante ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
+            cmd.Parameters.Add("@NroFacturaRecibo", NpgsqlDbType.Varchar).Value = (object?)m.NroFacturaRecibo ?? DBNull.Value;
+            cmd.Parameters.Add("@Litros", NpgsqlDbType.Numeric).Value = (object?)m.Litros ?? DBNull.Value;
+            cmd.Parameters.Add("@Importe", NpgsqlDbType.Numeric).Value = m.Importe;
+            cmd.Parameters.Add("@Notas", NpgsqlDbType.Varchar).Value = (object?)m.Notas ?? DBNull.Value;
+            cmd.Parameters.Add("@RutaComprobante", NpgsqlDbType.Varchar).Value = (object?)m.RutaComprobante ?? DBNull.Value;
+            cmd.Parameters.Add("@IdUsuario", NpgsqlDbType.Integer).Value = idUsuario;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -152,14 +152,14 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_InsertarIngresoOlivar(@Fecha, @IdConcepto, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas, @IdUsuario)", con);
-            cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
-            cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
-            cmd.Parameters.AddWithValue("@KgAceituna", (object?)m.KgAceituna ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@KgAceite", (object?)m.KgAceite ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PrecioPorKg", (object?)m.PrecioPorKg ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Importe", m.Importe);
-            cmd.Parameters.AddWithValue("@Notas", (object?)m.Notas ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
+            cmd.Parameters.Add("@KgAceituna", NpgsqlDbType.Numeric).Value = (object?)m.KgAceituna ?? DBNull.Value;
+            cmd.Parameters.Add("@KgAceite", NpgsqlDbType.Numeric).Value = (object?)m.KgAceite ?? DBNull.Value;
+            cmd.Parameters.Add("@PrecioPorKg", NpgsqlDbType.Numeric).Value = (object?)m.PrecioPorKg ?? DBNull.Value;
+            cmd.Parameters.Add("@Importe", NpgsqlDbType.Numeric).Value = m.Importe;
+            cmd.Parameters.Add("@Notas", NpgsqlDbType.Varchar).Value = (object?)m.Notas ?? DBNull.Value;
+            cmd.Parameters.Add("@IdUsuario", NpgsqlDbType.Integer).Value = idUsuario;
             con.Open();
             cmd.ExecuteNonQuery();
         }
@@ -170,7 +170,7 @@ namespace LaMeleraWeb.Models
             var lista = new List<EstadoCuotaAnual>();
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_EstadoCuotasAnual(@Anio)", con);
-            cmd.Parameters.AddWithValue("@Anio", anio);
+            cmd.Parameters.Add("@Anio", NpgsqlDbType.Integer).Value = anio;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -203,11 +203,11 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCredenciales(@IdUsuario, @ClaveActual, @NuevoNombreUsuario, @NuevoNombreCompleto, @NuevaClave)", con);
-            cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
-            cmd.Parameters.AddWithValue("@ClaveActual", claveActual);
-            cmd.Parameters.AddWithValue("@NuevoNombreUsuario", nuevoUsuario);
-            cmd.Parameters.AddWithValue("@NuevoNombreCompleto", nuevoNombre);
-            cmd.Parameters.AddWithValue("@NuevaClave", (object?)nuevaClave ?? DBNull.Value);
+            cmd.Parameters.Add("@IdUsuario", NpgsqlDbType.Integer).Value = idUsuario;
+            cmd.Parameters.Add("@ClaveActual", NpgsqlDbType.Varchar).Value = claveActual;
+            cmd.Parameters.Add("@NuevoNombreUsuario", NpgsqlDbType.Varchar).Value = nuevoUsuario;
+            cmd.Parameters.Add("@NuevoNombreCompleto", NpgsqlDbType.Varchar).Value = nuevoNombre;
+            cmd.Parameters.Add("@NuevaClave", NpgsqlDbType.Varchar).Value = (object?)nuevaClave ?? DBNull.Value;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -237,9 +237,9 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ActualizarCuentaConsulta(@NuevoUsuario, @NuevoNombre, @NuevaClave)", con);
-            cmd.Parameters.AddWithValue("@NuevoUsuario", nuevoUsuario);
-            cmd.Parameters.AddWithValue("@NuevoNombre", nuevoNombre);
-            cmd.Parameters.AddWithValue("@NuevaClave", (object?)nuevaClave ?? DBNull.Value);
+            cmd.Parameters.Add("@NuevoUsuario", NpgsqlDbType.Varchar).Value = nuevoUsuario;
+            cmd.Parameters.Add("@NuevoNombre", NpgsqlDbType.Varchar).Value = nuevoNombre;
+            cmd.Parameters.Add("@NuevaClave", NpgsqlDbType.Varchar).Value = (object?)nuevaClave ?? DBNull.Value;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -256,10 +256,10 @@ namespace LaMeleraWeb.Models
             var lista = new List<MovimientoReporte>();
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ReporteMovimientos(@FechaInicio, @FechaFin, @IdApartado, @IdConcepto)", con);
-            cmd.Parameters.AddWithValue("@FechaInicio", inicio);
-            cmd.Parameters.AddWithValue("@FechaFin", fin);
-            cmd.Parameters.AddWithValue("@IdApartado", (object?)idApartado ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdConcepto", (object?)idConcepto ?? DBNull.Value);
+            cmd.Parameters.Add("@FechaInicio", NpgsqlDbType.Timestamp).Value = inicio;
+            cmd.Parameters.Add("@FechaFin", NpgsqlDbType.Timestamp).Value = fin;
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = (object?)idApartado ?? DBNull.Value;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = (object?)idConcepto ?? DBNull.Value;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -289,8 +289,8 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT * FROM sp_ObtenerMovimientoPorId(@IdApartado, @IdRegistro)", con);
-            cmd.Parameters.AddWithValue("@IdApartado", idApartado);
-            cmd.Parameters.AddWithValue("@IdRegistro", idRegistro);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = idApartado;
+            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = idRegistro;
             con.Open();
 
             using NpgsqlDataReader dr = cmd.ExecuteReader();
@@ -321,20 +321,20 @@ namespace LaMeleraWeb.Models
         {
             using NpgsqlConnection con = new(_cadenaConexion);
             using NpgsqlCommand cmd = new("SELECT sp_EditarMovimiento(@IdApartado, @IdRegistro, @Fecha, @IdComunero, @IdConcepto, @PeriodoMes, @PeriodoAnio, @NroFacturaRecibo, @Litros, @KgAceituna, @KgAceite, @PrecioPorKg, @Importe, @Notas)", con);
-            cmd.Parameters.AddWithValue("@IdApartado", m.IdApartado);
-            cmd.Parameters.AddWithValue("@IdRegistro", m.IdRegistro);
-            cmd.Parameters.AddWithValue("@Fecha", m.Fecha);
-            cmd.Parameters.AddWithValue("@IdComunero", (object?)m.IdComunero ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdConcepto", m.IdConcepto);
-            cmd.Parameters.AddWithValue("@PeriodoMes", (object?)m.PeriodoMes ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PeriodoAnio", (object?)m.PeriodoAnio ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@NroFacturaRecibo", (object?)m.NroFacturaRecibo ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Litros", (object?)m.Litros ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@KgAceituna", (object?)m.KgAceituna ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@KgAceite", (object?)m.KgAceite ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PrecioPorKg", (object?)m.PrecioPorKg ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Importe", m.Importe);
-            cmd.Parameters.AddWithValue("@Notas", (object?)m.Notas ?? DBNull.Value);
+            cmd.Parameters.Add("@IdApartado", NpgsqlDbType.Integer).Value = m.IdApartado;
+            cmd.Parameters.Add("@IdRegistro", NpgsqlDbType.Integer).Value = m.IdRegistro;
+            cmd.Parameters.Add("@Fecha", NpgsqlDbType.Date).Value = m.Fecha;
+            cmd.Parameters.Add("@IdComunero", NpgsqlDbType.Integer).Value = (object?)m.IdComunero ?? DBNull.Value;
+            cmd.Parameters.Add("@IdConcepto", NpgsqlDbType.Integer).Value = m.IdConcepto;
+            cmd.Parameters.Add("@PeriodoMes", NpgsqlDbType.Integer).Value = (object?)m.PeriodoMes ?? DBNull.Value;
+            cmd.Parameters.Add("@PeriodoAnio", NpgsqlDbType.Integer).Value = (object?)m.PeriodoAnio ?? DBNull.Value;
+            cmd.Parameters.Add("@NroFacturaRecibo", NpgsqlDbType.Varchar).Value = (object?)m.NroFacturaRecibo ?? DBNull.Value;
+            cmd.Parameters.Add("@Litros", NpgsqlDbType.Numeric).Value = (object?)m.Litros ?? DBNull.Value;
+            cmd.Parameters.Add("@KgAceituna", NpgsqlDbType.Numeric).Value = (object?)m.KgAceituna ?? DBNull.Value;
+            cmd.Parameters.Add("@KgAceite", NpgsqlDbType.Numeric).Value = (object?)m.KgAceite ?? DBNull.Value;
+            cmd.Parameters.Add("@PrecioPorKg", NpgsqlDbType.Numeric).Value = (object?)m.PrecioPorKg ?? DBNull.Value;
+            cmd.Parameters.Add("@Importe", NpgsqlDbType.Numeric).Value = m.Importe;
+            cmd.Parameters.Add("@Notas", NpgsqlDbType.Varchar).Value = (object?)m.Notas ?? DBNull.Value;
             con.Open();
             cmd.ExecuteNonQuery();
         }
